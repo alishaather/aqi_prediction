@@ -46,7 +46,7 @@ def fetch_aqi_data(city: str="Karachi", past_days:int=30) -> Optional[pd.DataFra
 
 def fetch_weather_data(city: str = "Karachi", past_days: int = 30) -> Optional[pd.DataFrame]:
     """
-    Fetches historical weather data from Open-Meteo Weather API for Karachi.
+    Fetches historical weather data from Open-Meteo archive API for Karachi.
     Parameters:
         city (str): Name of the city (default: "Karachi").
         past_days (int): Number of past days to fetch (default: 30).   
@@ -54,14 +54,16 @@ def fetch_weather_data(city: str = "Karachi", past_days: int = 30) -> Optional[p
         Optional[pd.DataFrame]: DataFrame with hourly weather metrics or None if request fails.
     """
     print(f"Fetching Weather data for {city} (past {past_days} days)...")
+    end_date = (pd.Timestamp.now() - pd.Timedelta(days=2)).strftime('%Y-%m-%d')
+    start_date = (pd.Timestamp.now() - pd.Timedelta(days=past_days)).strftime('%Y-%m-%d')
     
-    url = "https://api.open-meteo.com/v1/forecast"
-
+    url = "https://archive-api.open-meteo.com/v1/archive"
     params = {
         "latitude": KARACHI_LAT,
         "longitude": KARACHI_LON,
+        "start_date": start_date,
+        "end_date": end_date,
         "hourly": "temperature_2m,relative_humidity_2m,wind_speed_10m,wind_direction_10m,precipitation",
-        "past_days": past_days,
         "timezone": TIMEZONE
     }
 

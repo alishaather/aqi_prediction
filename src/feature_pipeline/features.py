@@ -35,22 +35,41 @@ def add_rolling_features(df: pd.DataFrame, target_col:str="us_aqi", windows: lis
     df = df.copy()
     
     for window in windows:
-        df[f"{target_col}_roll_mean_{window}h"] = df[target_col].rolling(window=window).mean()
-        df[f"{target_col}_roll_std_{window}h"] = df[target_col].rolling(window=window).std()
+        target_shifted = df[target_col].shift(1)
+        df[f"{target_col}_roll_mean_{window}h"] = target_shifted.rolling(window=window).mean()
+        df[f"{target_col}_roll_std_{window}h"] = target_shifted.rolling(window=window).std()
         
     return df
 
+def add_target(df: pd.DataFrame, target_col: str = "us_aqi", horizon: int = 72) -> pd.DataFrame:
+    """
+    Shifts the target forward so we're predicting `horizon` hours ahead, not the current hour.
+    """
+    df = df.copy()
+    df["target_aqi"] = df[target_col].shift(-horizon)
+    return df
 
-def create_feature_pipeline(df: pd.DataFrame) -> pd.DataFrame:
+
+def create_feature_pipeline(df: pd.DataFrame, horizon: int = 72) -> pd.DataFrame:
     """
     Master pipeline function to generate all features and clean NaN rows caused by lagging.
+    Also drops raw current-hour pollutants to prevent target leakage.
     """
     df = add_time_features(df)
     df = add_lag_features(df, target_col="us_aqi", lags=[1, 2, 24, 48])
     df = add_rolling_features(df, target_col="us_aqi", windows=[6, 24])
-    
-    # Drop NaNs created by lag shifts and rolling calculations
+    df = add_target(df, target_col="us_aqi", horizon=horizon)
+
+    raw_pollutants = [
+        "pm2_5", 
+        "pm10", 
+        "nitrogen_dioxide", 
+        "sulphur_dioxide", 
+        "ozone"
+    ]
+    df = df.drop(columns=raw_pollutants, errors="ignore")
+
     df_clean = df.dropna().reset_index(drop=True)
-    
+
     print(f"Features created successfully! Dataset shape: {df_clean.shape}")
     return df_clean
