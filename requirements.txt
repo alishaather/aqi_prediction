@@ -7,3 +7,4 @@ matplotlib
 hopsworks
 shap
 streamlit
+python-dotenv
