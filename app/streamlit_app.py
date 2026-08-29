@@ -6,22 +6,20 @@ Run with:
 
 Assumes it's run from the project root (so `src.*` imports resolve), and
 that model_registry/ already contains gb_day1.pkl, gb_day2.pkl, gb_day3.pkl
-and their matching scaler_*.pkl files (i.e. you've already run
-train_model.py at least once AFTER adding the change-rate features).
+and their matching scaler_*.pkl files.
 """
 
 import joblib
-import pandas as pd
 import streamlit as st
 
-from src.feature_pipeline.data_loader import fetch_combined_data
-from src.feature_pipeline.features import create_inference_features
+from src.feature_pipeline.fetch_data import fetch_combined_data
+from src.feature_pipeline.build_features import create_inference_features
+from src.utils.model_registry import load_model_from_registry
 
 HORIZONS = {"day1": ("24h", 24), "day2": ("48h", 48), "day3": ("72h", 72)}
 REGISTRY_DIR = "model_registry"
 
 
-# ---- AQI category lookup (US EPA breakpoints) ----
 def aqi_category(aqi: float):
     if aqi <= 50:
         return "Good", "#00e400"
@@ -41,22 +39,18 @@ def aqi_category(aqi: float):
 def load_models():
     models = {}
     for label in HORIZONS:
-        model = joblib.load(f"{REGISTRY_DIR}/gb_{label}.pkl")
-        scaler = joblib.load(f"{REGISTRY_DIR}/scaler_{label}.pkl")
+        model, scaler = load_model_from_registry(label)
         models[label] = (model, scaler)
     return models
 
 
-@st.cache_data(ttl=1800)  # refetch at most every 30 min
+@st.cache_data(ttl=1800)
 def load_latest_data():
-    # Fetching a couple weeks of history - more than enough to cover the
-    # 48h lag / 24h rolling windows the feature pipeline needs.
     raw_df = fetch_combined_data(past_days=14)
     return raw_df
 
 
 def get_feature_row(raw_df):
-    """Builds features and returns the single most recent usable row."""
     feat_df = create_inference_features(raw_df)
     if feat_df.empty:
         return None, None
@@ -67,8 +61,8 @@ def get_feature_row(raw_df):
 
 
 def main():
-    st.set_page_config(page_title="Karachi AQI Forecast", page_icon="🌫️", layout="centered")
-    st.title("🌫️ Karachi AQI Forecast")
+    st.set_page_config(page_title="Karachi AQI Forecast", layout="centered")
+    st.title("Karachi AQI Forecast")
     st.caption("3-day Air Quality Index forecast, powered by Open-Meteo data and a Gradient Boosting model.")
 
     with st.spinner("Fetching latest air quality data..."):
@@ -117,8 +111,7 @@ def main():
         except ValueError as e:
             st.error(
                 f"Model for {display} expects a different set of features than what's "
-                f"available. This usually means the model was trained BEFORE a feature "
-                f"pipeline change - retrain with `python -m src.training_pipeline.train_model` "
+                f"available. Retrain with `python -m src.training_pipeline.run` "
                 f"and refresh this page.\n\nDetails: {e}"
             )
             return
@@ -137,14 +130,14 @@ def main():
             hazard_alerts.append((display, pred, cat_name))
 
     if hazard_alerts:
-        st.subheader("⚠️ Hazard Alerts")
+        st.subheader("Hazard Alerts")
         for display, pred, cat_name in hazard_alerts:
-            st.error(f"**{display} forecast: {pred:.0f} ({cat_name})** — sensitive groups should limit outdoor exposure.")
+            st.error(f"{display} forecast: {pred:.0f} ({cat_name}) - sensitive groups should limit outdoor exposure.")
     else:
         st.success("No hazardous AQI levels expected in the next 3 days.")
 
     st.subheader("Recent AQI Trend")
-    trend_df = raw_df[["time", "us_aqi"]].set_index("time").tail(24 * 7)  # last 7 days
+    trend_df = raw_df[["time", "us_aqi"]].set_index("time").tail(24 * 7)
     st.line_chart(trend_df)
 
     with st.expander("Model explainability (SHAP)"):
@@ -155,7 +148,7 @@ def main():
         try:
             st.image("shap_summary_day3.png")
         except Exception:
-            st.info("Run `explain_model()` in train_model.py first to generate shap_summary_day3.png.")
+            st.info("Run explain_model() in run.py first to generate shap_summary_day3.png.")
 
 
 if __name__ == "__main__":

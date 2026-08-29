@@ -5,7 +5,7 @@ from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.preprocessing import StandardScaler
 
 from src.training_pipeline.evaluate import evaluate_with_cv, evaluate_persistence_baseline
-
+from src.utils.model_registry import save_model_to_registry
 # Final tuned Gradient Boosting params per forecast horizon
 # found via RandomizedSearchCV + TimeSeriesSplit. see report for methodology
 HORIZON_CONFIG = {
@@ -63,3 +63,7 @@ def train_final_models(raw_df, prepare_data_fn):
         joblib.dump(model, f"model_registry/gb_{label}.pkl")
         joblib.dump(scaler, f"model_registry/scaler_{label}.pkl")
         print(f"Saved model_registry/gb_{label}.pkl")
+
+                
+        metrics = {"n_estimators": config["params"]["n_estimators"]}  # placeholder; ideally pass real RMSE/MAE
+        save_model_to_registry(model, scaler, label, metrics)
