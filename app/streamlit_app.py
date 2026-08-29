@@ -8,10 +8,12 @@ Assumes it's run from the project root (so `src.*` imports resolve), and
 that model_registry/ already contains gb_day1.pkl, gb_day2.pkl, gb_day3.pkl
 and their matching scaler_*.pkl files.
 """
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import joblib
 import streamlit as st
-
 from src.feature_pipeline.fetch_data import fetch_combined_data
 from src.feature_pipeline.build_features import create_inference_features
 from src.utils.model_registry import load_model_from_registry
