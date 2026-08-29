@@ -13,7 +13,7 @@ def get_api_key():
 
 
 def get_feature_store():
-    project = hopsworks.login(api_key_value=get_api_key)
+    project = hopsworks.login(api_key_value=get_api_key())
     return project.get_feature_store()
 
 
