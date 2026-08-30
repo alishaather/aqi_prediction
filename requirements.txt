@@ -9,3 +9,4 @@ shap
 streamlit
 python-dotenv
 confluent-kafka
+pyarrow
