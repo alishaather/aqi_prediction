@@ -42,16 +42,16 @@ def compare_models_for_horizon(label, X, y):
     evaluate_with_cv(GradientBoostingRegressor(**params, random_state=42), X, y)
 
 
-def train_final_models(raw_df, prepare_data_fn):
+def train_final_models(prepare_data_fn):
     """
-    prepare_data_fn: a function(raw_df, horizon) -> (X, y, feature_cols),
-    passed in so this file doesn't need to import from feature_pipeline directly.
+    prepare_data_fn: a function(horizon) -> (X, y, feature_cols), reading
+    from the feature store rather than raw data directly.
     """
     os.makedirs("model_registry", exist_ok=True)
 
     for label, config in HORIZON_CONFIG.items():
         print(f"\n=== Training Gradient Boosting for {label} ({config['horizon']}h ahead) ===")
-        X, y, feature_cols = prepare_data_fn(raw_df, horizon=config["horizon"])
+        X, y, feature_cols = prepare_data_fn(config["horizon"])
 
         model = GradientBoostingRegressor(**config["params"], random_state=42)
         evaluate_with_cv(model, X, y)
@@ -64,6 +64,6 @@ def train_final_models(raw_df, prepare_data_fn):
         joblib.dump(scaler, f"model_registry/scaler_{label}.pkl")
         print(f"Saved model_registry/gb_{label}.pkl")
 
-                
-        metrics = {"n_estimators": config["params"]["n_estimators"]}  # placeholder; ideally pass real RMSE/MAE
+        from src.utils.model_registry import save_model_to_registry
+        metrics = {"n_estimators": config["params"]["n_estimators"]}
         save_model_to_registry(model, scaler, label, metrics)

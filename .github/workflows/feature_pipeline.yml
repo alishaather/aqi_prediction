@@ -1,0 +1,34 @@
+name: Feature Pipeline
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+jobs:
+  run-feature-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Fetch and push live features to Hopsworks
+        env:
+          HOPSWORKS_API_KEY: ${{ secrets.HOPSWORKS_API_KEY }}
+        run: |
+          python -c "
+          from src.feature_pipeline.fetch_data import fetch_combined_data
+          from src.feature_pipeline.build_features import create_inference_features
+          from src.utils.feature_store import save_live_features
+
+          raw_df = fetch_combined_data(past_days=14)
+          features_df = create_inference_features(raw_df)
+          save_live_features(features_df)
+          "

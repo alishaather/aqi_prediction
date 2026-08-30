@@ -1,0 +1,31 @@
+name: Training Pipeline
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run-training-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run training pipeline
+        env:
+          HOPSWORKS_API_KEY: ${{ secrets.HOPSWORKS_API_KEY }}
+        run: python -m src.training_pipeline.run
+
+      - name: Commit updated models
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add model_registry/
+          git commit -m "Update trained models [automated]" || echo "No changes to commit"
+          git push
