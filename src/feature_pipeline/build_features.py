@@ -64,18 +64,12 @@ def add_target(df: pd.DataFrame, target_col: str = "us_aqi", horizon: int = 72) 
 
 def enforce_hopsworks_dtypes(df: pd.DataFrame) -> pd.DataFrame:
     """
-    fixing data types for the live fetures.
+    fixing datatype for live features.
     """
-    int_columns = [
-        "us_aqi", "relative_humidity_2m",
-        "hour", "day_of_week", "day", "month", "is_weekend",
-    ]
     df = df.copy()
-    for col in int_columns:
-        if col in df.columns:
-            df[col] = df[col].round().astype("int64")
+    if "us_aqi" in df.columns:
+        df["us_aqi"] = df["us_aqi"].round().astype("int64")
     return df
-
 
 def create_feature_pipeline(df: pd.DataFrame, horizon: int = 72) -> pd.DataFrame:
     """
