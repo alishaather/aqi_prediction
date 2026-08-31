@@ -37,7 +37,6 @@ from src.utils.feature_store import load_live_features
 # if __name__ == "__main__":
 #     explain_model(label="day3")
 
-
 def explain_forecast(label="day3"):
     import shap
 
@@ -50,5 +49,6 @@ def explain_forecast(label="day3"):
     X_scaled = scaler.transform(latest[feature_cols])
     explainer = shap.TreeExplainer(model)
     shap_values = explainer(X_scaled)
+    shap_values.feature_names = feature_cols
 
     return shap_values, feature_cols
