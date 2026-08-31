@@ -96,7 +96,9 @@ def main():
             shap.plots.waterfall(shap_values[0], show=False)
             st.pyplot(fig)
         except Exception as e:
-            st.info(f"Explainability temporarily unavailable: {e}")
+            # st.info(f"Explainability temporarily unavailable: {e}")
+            import traceback
+            st.text(traceback.format_exc())
 
 
 if __name__ == "__main__":
