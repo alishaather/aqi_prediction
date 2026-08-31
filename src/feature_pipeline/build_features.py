@@ -62,6 +62,20 @@ def add_target(df: pd.DataFrame, target_col: str = "us_aqi", horizon: int = 72) 
     df["target_aqi"] = df[target_col].shift(-horizon)
     return df
 
+def enforce_hopsworks_dtypes(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    fixing data types for the live fetures.
+    """
+    int_columns = [
+        "us_aqi", "relative_humidity_2m",
+        "hour", "day_of_week", "day", "month", "is_weekend",
+    ]
+    df = df.copy()
+    for col in int_columns:
+        if col in df.columns:
+            df[col] = df[col].round().astype("int64")
+    return df
+
 
 def create_feature_pipeline(df: pd.DataFrame, horizon: int = 72) -> pd.DataFrame:
     """
@@ -82,8 +96,8 @@ def create_feature_pipeline(df: pd.DataFrame, horizon: int = 72) -> pd.DataFrame
         "ozone"
     ]
     df = df.drop(columns=raw_pollutants, errors="ignore")
-
     df_clean = df.dropna().reset_index(drop=True)
+    df_clean = enforce_hopsworks_dtypes(df_clean)
 
     print(f"Features created successfully! Dataset shape: {df_clean.shape}")
     return df_clean
@@ -92,8 +106,7 @@ def create_feature_pipeline(df: pd.DataFrame, horizon: int = 72) -> pd.DataFrame
 def create_inference_features(df: pd.DataFrame) -> pd.DataFrame:
     """
     Same feature engineering as create_feature_pipeline, but without
-    add_target. so the most recent rows (which have no target yet)
-    are kept instead of dropped. Used for live prediction, not training.
+    add_target. Used for live prediction.
     """
     df = add_time_features(df)
     df = add_lag_features(df, target_col="us_aqi", lags=[1, 2, 24, 48])
@@ -110,4 +123,5 @@ def create_inference_features(df: pd.DataFrame) -> pd.DataFrame:
     df = df.drop(columns=raw_pollutants, errors="ignore")
 
     df_clean = df.dropna().reset_index(drop=True)
+    df_clean = enforce_hopsworks_dtypes(df_clean)
     return df_clean
