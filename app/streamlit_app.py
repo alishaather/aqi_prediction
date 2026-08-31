@@ -87,11 +87,16 @@ def main():
         st.success("No hazardous AQI levels expected in the next 3 days.")
 
     with st.expander("Model explainability (SHAP)"):
-        st.write("SHAP summary plot for the 3-day model - shows which features push the forecast up or down.")
+        st.write("Feature contributions behind the 72h forecast.")
         try:
-            st.image("shap_summary_day3.png")
-        except Exception:
-            st.info("Run explain_model() first to generate shap_summary_day3.png.")
+            import matplotlib.pyplot as plt
+            import shap
+            shap_values, feature_cols = explain_forecast(label="day3")
+            fig = plt.figure()
+            shap.plots.waterfall(shap_values[0], show=False)
+            st.pyplot(fig)
+        except Exception as e:
+            st.info(f"Explainability temporarily unavailable: {e}")
 
 
 if __name__ == "__main__":
