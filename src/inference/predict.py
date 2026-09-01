@@ -1,4 +1,4 @@
-from src.utils.feature_store import load_live_features
+from src.utils.feature_store import load_live_features, load_recent_live_features
 from src.utils.model_registry import load_model_from_registry
 
 HORIZONS = {"day1": ("24h", 24), "day2": ("48h", 48), "day3": ("72h", 72)}
@@ -24,3 +24,7 @@ def get_latest_forecast():
         forecasts[label] = (display, pred)
 
     return current_aqi, current_time, forecasts
+
+def get_recent_trend(days=7):
+    df = load_recent_live_features(days=days)
+    return df[["time", "us_aqi"]]
