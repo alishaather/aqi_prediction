@@ -63,4 +63,10 @@ def load_live_features():
     fg = fs.get_feature_group(name="aqi_live_features", version=1)
     return fg.read()
 
+def load_recent_live_features(days=7):
+    fs = get_feature_store()
+    fg = fs.get_feature_group(name="aqi_live_features", version=1)
+    df = fg.read()
+    df = df.sort_values("time").reset_index(drop=True)
+    return df.tail(days * 24)
 
