@@ -1,11 +1,11 @@
 name: Training Pipeline
 
-# on:
-#   workflow_dispatch:
 on:
-  schedule:
-    - cron: '0 19 * * *'  #runs automatically at 12:00 a.m Pak time
   workflow_dispatch:
+# on:
+  # schedule:
+  #   - cron: '0 19 * * *' #runs automatically at 12:00 a.m Pak time
+  # workflow_dispatch:
 jobs:
   run-training-pipeline:
     runs-on: ubuntu-latest
