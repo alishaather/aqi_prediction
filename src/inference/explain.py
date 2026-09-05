@@ -10,11 +10,6 @@ def explain_forecast(latest_row, label="day3"):
 
     model, scaler = load_model_from_registry(label)
     feature_cols = [c for c in latest_row.columns if c not in ["time" ,"us_aqi"]]
-    # df = load_live_features()
-    # df = df.sort_values("time").reset_index(drop=True)
-    # latest = df.iloc[[-1]]
-    # feature_cols = [c for c in latest.columns if c not in ["time", "us_aqi"]]
-
     X_scaled = scaler.transform(latest_row[feature_cols])
     explainer = shap.TreeExplainer(model)
     shap_values = explainer(X_scaled)
