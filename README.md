@@ -21,9 +21,9 @@ An end-to-end Air Quality Index (AQI) forecasting system for Karachi, predicting
 
 **Full Project Report:** [Karachi_AQI_Report.pdf](report/Karachi_AQI_Report.pdf)
 
-**Live Demo:** [karachi-aqi-forecast.streamlit.app](https://aqiprediction-karachi.streamlit.app/)
+**Live Demo:** [https://aqiprediction-karachi.streamlit.app/](https://aqiprediction-karachi.streamlit.app/)
 
-**GitHub Repository:** [github.com/your-username/aqi_prediction](https://github.com/alishaather/aqi_prediction)
+**GitHub Repository:** [https://github.com/alishaather/aqi_prediction](https://github.com/alishaather/aqi_prediction)
 
 ---
 
@@ -126,7 +126,6 @@ Both pipelines run through GitHub Actions:
 
 ---
 
-## Project Structure
 
 ## Project Structure
 
