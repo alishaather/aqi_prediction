@@ -4,7 +4,7 @@ requests
 scikit-learn
 joblib
 matplotlib
-hopsworks
+hopsworks==5.1.*
 shap
 streamlit
 python-dotenv
